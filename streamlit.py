@@ -1,0 +1,78 @@
+import streamlit as st
+import subprocess
+import os
+
+# Ensure directory exists for uploads
+save_dir = "uploaded_tifs"
+os.makedirs(save_dir, exist_ok=True)
+
+# Ensure directory exists for outputs
+output_dir = "generated_tifs"
+os.makedirs(output_dir, exist_ok=True)
+
+# Function to run scripts and return output
+def run_script(script, file_paths, output_tif):
+    result = subprocess.run(["python", script] + file_paths, capture_output=True, text=True)
+    return result.stdout, result.stderr, output_tif
+
+st.title("TIF File Processing & Download")
+
+# File uploaders
+file1 = st.file_uploader("Upload NIR Band TIF File", type=["tif"])
+file2 = st.file_uploader("Upload Red Band TIF File", type=["tif"])
+file3 = st.file_uploader("Upload Green Band TIF File", type=["tif"])
+file4 = st.file_uploader("Upload Red Edge (RE) Band TIF File", type=["tif"])
+
+if file1 and file2 and file3 and file4:
+    st.success("✅ All files uploaded successfully!")
+
+    # Save files
+    band_names = ["NIR", "Red", "Green", "RE"]
+    file_paths = []
+    for file, band in zip([file1, file2, file3, file4], band_names):
+        file_path = os.path.join(save_dir, f"{band}.tif")
+        with open(file_path, "wb") as f:
+            f.write(file.getbuffer())
+        file_paths.append(file_path)
+
+    # Run NDVI
+    ndvi_tif = os.path.join(output_dir, "NDVI_PYTHON.TIF")
+    if st.button("Run NDVI"):
+        stdout, stderr, ndvi_tif = run_script("ndvi_script.py", [file_paths[0], file_paths[1]], ndvi_tif)
+        if stderr:
+            st.error(f"NDVI Error: {stderr}")
+        else:
+            st.success(stdout)
+        st.image("ndvi_plot.png", caption="NDVI", use_column_width=True)
+        if os.path.exists(ndvi_tif):
+            with open(ndvi_tif, "rb") as f:
+                st.download_button("Download NDVI TIF", f, file_name="NDVI_PYTHON.TIF")
+
+    # Run NDTI
+    ndti_tif = os.path.join(output_dir, "NDTI_PYTHON.TIF")
+    if st.button("Run NDTI"):
+        stdout, stderr, ndti_tif = run_script("ndti_script.py", [file_paths[0], file_paths[3]], ndti_tif)
+        if stderr:
+            st.error(f"NDTI Error: {stderr}")
+        else:
+            st.success(stdout)
+        st.image("ndti_plot.png", caption="NDTI", use_column_width=True)
+        if os.path.exists(ndti_tif):
+            with open(ndti_tif, "rb") as f:
+                st.download_button("Download NDTI TIF", f, file_name="NDTI_PYTHON.TIF")
+
+    # Run Chlorophyll Index
+    chlorophyll_tif = os.path.join(output_dir, "CHLOROPHYLL_PYTHON.TIF")
+    if st.button("Run Chlorophyll Index"):
+        stdout, stderr, chlorophyll_tif = run_script("chlorophyll_script.py", [file_paths[0], file_paths[2]], chlorophyll_tif)
+        if stderr:
+            st.error(f"Chlorophyll Error: {stderr}")
+        else:
+            st.success(stdout)
+        st.image("chlorophyll_plot.png", caption="Chlorophyll Index", use_column_width=True)
+        if os.path.exists(chlorophyll_tif):
+            with open(chlorophyll_tif, "rb") as f:
+                st.download_button("Download Chlorophyll Index TIF", f, file_name="CHLOROPHYLL_PYTHON.TIF")
+
+else:
+    st.warning("⚠️ Please upload all four files to process the data.")
