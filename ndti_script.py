@@ -2,15 +2,16 @@ import rasterio
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import os
 
 # Get file paths from command line arguments
-if len(sys.argv) < 3:
-    raise ValueError("Usage: python ndti_script.py <NIR_TIF> <RED_EDGE_TIF>")
+if len(sys.argv) < 4:
+    raise ValueError("Usage: python ndti_script.py <NIR_TIF> <RE_TIF> <OUTPUT_TIF>")
 
 nir_tif = sys.argv[1]
 rededge_tif = sys.argv[2]
-output_ndti_tif = "NDTI_PYTHON.TIF"
-output_plot = "ndti_plot.png"
+output_ndti_tif = sys.argv[3]
+output_plot = output_ndti_tif.replace(".TIF", ".png")
 
 # Open NIR and Red Edge bands
 with rasterio.open(nir_tif) as nir_src, rasterio.open(rededge_tif) as re_src:

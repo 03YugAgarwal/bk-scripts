@@ -2,15 +2,16 @@ import rasterio
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import os
 
 # Get file paths from command line arguments
-if len(sys.argv) < 3:
-    raise ValueError("Usage: python ndvi_script.py <NIR_TIF> <RED_TIF>")
+if len(sys.argv) < 4:
+    raise ValueError("Usage: python ndvi_script.py <NIR_TIF> <RED_TIF> <OUTPUT_TIF>")
 
 nir_tif = sys.argv[1]
 red_tif = sys.argv[2]
-output_ndvi_tif = "NDVI_PYTHON.TIF"
-output_plot = "ndvi_plot.png"
+output_ndvi_tif = sys.argv[3]
+output_plot = output_ndvi_tif.replace(".TIF", ".png")  # Ensure plot is saved in the same directory
 
 # Open Red and NIR bands
 with rasterio.open(red_tif) as red_src, rasterio.open(nir_tif) as nir_src:

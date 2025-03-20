@@ -2,15 +2,16 @@ import rasterio
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
+import os
 
 # Get file paths from command line arguments
-if len(sys.argv) < 3:
-    raise ValueError("Usage: python chlorophyll_script.py <NIR_TIF> <GREEN_TIF>")
+if len(sys.argv) < 4:
+    raise ValueError("Usage: python chlorophyll_script.py <NIR_TIF> <GREEN_TIF> <OUTPUT_TIF>")
 
 nir_tif = sys.argv[1]
 green_tif = sys.argv[2]
-output_chlorophyll_tif = "CHLOROPHYLL_PYTHON.TIF"
-output_plot = "chlorophyll_plot.png"
+output_chlorophyll_tif = sys.argv[3]
+output_plot = output_chlorophyll_tif.replace(".TIF", ".png")
 
 # Open Green and NIR bands
 with rasterio.open(green_tif) as green_src, rasterio.open(nir_tif) as nir_src:
